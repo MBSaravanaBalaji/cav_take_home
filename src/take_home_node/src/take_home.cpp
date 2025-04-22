@@ -163,20 +163,20 @@ void TakeHome::imu_top_callback(
     }
   }
 
-  // 3) Compute from the last message and append
+  // Compute from the last message and append
   if (last_imu_time_.nanoseconds() != 0) {
     double dt = (now - last_imu_time_).seconds();
     imu_dt_window_.emplace_back(now, dt);
   }
   last_imu_time_ = now;
 
-  //akeout any entries older than 1 second
+  // takeout any entries older than 1 second
   rclcpp::Time cutoff = now - rclcpp::Duration::from_seconds(1.0);
   while (!imu_dt_window_.empty() && imu_dt_window_.front().first < cutoff) {
     imu_dt_window_.pop_front();
   }
 
-  // 5) Compute variance for window
+  // compute variance for window
   double var = 0.0;
   const size_t N = imu_dt_window_.size();
   if (N > 1) {
@@ -189,7 +189,7 @@ void TakeHome::imu_top_callback(
     var = (sum_sq / static_cast<double>(N)) - (mean * mean);
   }
 
-  // 6) Publish
+  // Publish
   std_msgs::msg::Float32 jitter_msg;
   jitter_msg.data = static_cast<float>(var);
   imu_top_jitter_publisher_->publish(jitter_msg);
